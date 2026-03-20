@@ -1,59 +1,87 @@
-# SD Card Image Writer - SD卡镜像写入工具
+# USB/SD Card Image Writer - USB/SD卡镜像写入工具
 
 [![Version](https://img.shields.io/badge/version-2.0-brightgreen.svg)]()
 [![PowerShell](https://img.shields.io/badge/PowerShell-5.1+-blue.svg)]()
 [![Go](https://img.shields.io/badge/Go-1.21+-00ADD8.svg)]()
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)]()
+[![License](https://img.shields.io/badge/license-GPLv3-blue.svg)]()
+[![GUI](https://img.shields.io/badge/GUI-Fyne-green.svg)]()
 
-高性能的SD卡镜像写入工具，采用PowerShell + Go混合架构。
+高性能的 SD 卡镜像写入工具，采用 Go + Fyne GUI 架构，支持 CLI 和 GUI 两种使用方式。
 
 ---
 
 ## ✨ 特性
 
-- 🔍 **智能检测** - 自动识别SD卡设备
-- ⚡ **高性能写入** - Go原生文件操作
-- 📊 **实时进度** - 40字符进度条 + 速度显示
+- 🔍 **智能检测** - 自动识别 SD 卡设备
+- 🖥️ **图形界面** - 友好的 GUI 应用程序
+- ⚡ **高性能写入** - Go 原生文件操作
+- 📊 **实时进度** - 进度条 + 速度显示
 - 🛡️ **安全可靠** - 多重安全检查和用户确认
-- 🎯 **易于使用** - 友好的命令行界面
+- 🎯 **易于使用** - CLI 和 GUI 双模式
 
 ---
 
 ## 🚀 快速开始
 
-### 安装
+### 下载使用
 
-无需安装，直接使用：
+从 [Releases](https://github.com/21758/usb_detect/releases) 下载预编译的二进制文件。
+
+### GUI 模式（推荐）
+
+双击 `启动GUI.bat` 或直接运行 `sd-gui.exe`：
 
 ```powershell
-# 克隆项目
-git clone <repository-url>
-cd sd-detect
-
-# 以管理员身份运行 PowerShell
-.\scripts\sd-write.ps1 -List
+.\bin\sd-gui.exe
 ```
 
-### 基础使用
+### CLI 模式
 
 ```powershell
-# 1. 列出SD卡设备
+# 列出 SD 卡设备
 .\scripts\sd-write.ps1 -List
 
-# 2. 自动检测并写入
+# 自动检测并写入
 .\scripts\sd-write.ps1 -Image .\raspios.img -AutoDetect
 
-# 3. 指定磁盘写入
+# 指定磁盘写入
 .\scripts\sd-write.ps1 -Image .\openwrt.img -Disk 2
+```
+
+### 直接使用二进制
+
+```powershell
+# CLI 模式
+.\bin\sd-write.exe -list
+.\bin\sd-write.exe -image .\raspios.img -disk 2 -bs 1048576
 ```
 
 ---
 
-## 📖 详细文档
+## 📖 命令行参数
 
-- **[📚 用户使用指南](USER_GUIDE.md)** - 完整的使用说明
-- **[📋 版本发布说明](RELEASE_NOTES.md)** - 版本更新记录
-- **[🔧 开发文档](docs/)** - 技术文档
+### PowerShell 脚本参数
+
+| 参数 | 说明 |
+|------|------|
+| `-Image <path>` | 镜像文件路径 |
+| `-Disk <number>` | 目标磁盘编号 (0-99) |
+| `-AutoDetect` | 自动检测 SD 卡 |
+| `-List` | 列出可用设备 |
+| `-Watch` | 监听 SD 卡插入 |
+| `-BlockSize <size>` | 块大小 (512KB/1MB/4MB/8MB) |
+| `-Verify` | 写入后验证 |
+| `-Force` | 跳过确认 |
+
+### CLI 二进制参数
+
+| 参数 | 说明 |
+|------|------|
+| `-image <path>` | 镜像文件路径 |
+| `-disk <number>` | 目标磁盘编号 (0-99) |
+| `-bs <bytes>` | 块大小（字节，默认 1MB） |
+| `-verify` | 写入后验证 |
+| `-list` | 列出可用设备 |
 
 ---
 
@@ -62,10 +90,10 @@ cd sd-detect
 ### 树莓派系统安装
 
 ```powershell
-# 下载镜像
-Invoke-WebRequest -Uri "https://downloads.raspberrypi.org/raspios_lite_armhf/images/raspios_lite_armhf-2023-05-03/2023-05-03-raspios-bullseye-armhf-lite.img.xz" -OutFile raspios.img.xz
+# GUI 模式
+.\bin\sd-gui.exe
 
-# 解压并写入
+# CLI 模式
 .\scripts\sd-write.ps1 -Image .\raspios.img -AutoDetect
 ```
 
@@ -83,18 +111,27 @@ Invoke-WebRequest -Uri "https://downloads.raspberrypi.org/raspios_lite_armhf/ima
 
 ---
 
-## 📋 命令行参数
+## 📋 项目结构
 
-| 参数 | 说明 |
-|------|------|
-| `-Image <path>` | 镜像文件路径 |
-| `-Disk <number>` | 目标磁盘编号 (0-99) |
-| `-AutoDetect` | 自动检测SD卡 |
-| `-List` | 列出可用设备 |
-| `-Watch` | 监听SD卡插入 |
-| `-BlockSize <size>` | 块大小 (512KB/1MB/4MB/8MB) |
-| `-Verify` | 写入后验证 |
-| `-Force` | 跳过确认（脚本用） |
+```
+usb_detect/
+├── cmd/               # 命令行入口
+│   ├── sd-write/      # CLI 应用
+│   └── gui/           # GUI 应用
+├── pkg/               # Go 核心代码
+│   ├── disk/          # 磁盘写入
+│   ├── progress/      # 进度显示
+│   ├── devices/       # 设备检测
+│   └── ui/            # GUI 界面
+├── scripts/           # PowerShell 脚本
+│   ├── sd-detect.ps1  # 设备检测
+│   └── sd-write.ps1   # 主入口脚本
+├── bin/               # 编译输出
+│   ├── sd-write.exe   # CLI 可执行文件
+│   └── sd-gui.exe     # GUI 可执行文件
+├── 启动GUI.bat        # GUI 启动脚本
+└── LICENSE            # GPL v3 许可证
+```
 
 ---
 
@@ -103,8 +140,8 @@ Invoke-WebRequest -Uri "https://downloads.raspberrypi.org/raspios_lite_armhf/ima
 **此工具会完全擦除目标磁盘上的所有数据！**
 
 使用前请：
-1. ✅ 确认已选择正确的SD卡
-2. ✅ 备份SD卡上的重要数据
+1. ✅ 确认已选择正确的 SD 卡
+2. ✅ 备份 SD 卡上的重要数据
 3. ✅ 以管理员身份运行
 
 ---
@@ -117,35 +154,23 @@ Invoke-WebRequest -Uri "https://downloads.raspberrypi.org/raspios_lite_armhf/ima
 
 ---
 
-## 📊 项目结构
+## 🧪 开发
 
-```
-sd-detect/
-├── scripts/           # PowerShell脚本
-│   ├── sd-detect.ps1  # 设备检测
-│   ├── sd-write.ps1   # 主入口
-│   └── build.ps1      # 编译脚本
-├── bin/
-│   └── sd-write.exe   # 可执行文件 (1.83MB)
-├── pkg/               # Go核心代码
-├── tests/             # 测试文件
-├── examples/          # 使用示例
-└── docs/              # 开发文档
-```
-
----
-
-## 🧪 测试
+### 编译
 
 ```powershell
-# 运行所有测试
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File tests\final-verification.ps1
+# 编译 CLI
+go build -o bin/sd-write.exe ./cmd/sd-write
 
-# 查看测试报告
-cat docs/TEST_REPORT.md
+# 编译 GUI
+go build -o bin/sd-gui.exe ./cmd/gui
 ```
 
-**测试结果:** 48/48 通过 (100%)
+### 运行测试
+
+```powershell
+go test ./...
+```
 
 ---
 
@@ -154,7 +179,7 @@ cat docs/TEST_REPORT.md
 - ✅ 树莓派系统安装
 - ✅ OpenWrt 路由器刷写
 - ✅ 开发板系统部署
-- ✅ SD卡系统备份恢复
+- ✅ SD 卡系统备份恢复
 
 ---
 
@@ -163,36 +188,27 @@ cat docs/TEST_REPORT.md
 **Q: 提示"需要管理员权限"？**
 A: 右键点击 PowerShell，选择"以管理员身份运行"
 
-**Q: 写入后Windows无法读取SD卡？**
-A: 正常现象，SD卡现在包含Linux分区。在磁盘管理中重新分配盘符即可。
+**Q: 写入后 Windows 无法读取 SD 卡？**
+A: 正常现象，SD 卡现在包含 Linux 分区。在磁盘管理中重新分配盘符即可。
 
-**Q: 如何查看写入进度？**
-A: 工具会自动显示实时进度条
-
-更多问题请查看 [用户使用指南](USER_GUIDE.md)
+**Q: GUI 无法启动？**
+A: 确保 Windows 防火墙/杀毒软件没有阻止程序运行。
 
 ---
 
 ## 🔗 相关链接
 
-- **[用户指南](USER_GUIDE.md)** - 详细使用说明
-- **[发布说明](RELEASE_NOTES.md)** - 版本更新记录
-- **[测试报告](docs/TEST_REPORT.md)** - 完整测试报告
+- **GitHub:** https://github.com/21758/usb_detect
+- **Fyne:** https://fyne.io/
 
 ---
 
 ## 📄 许可证
 
-MIT License
+GNU General Public License v3.0
 
 ---
 
-## 🙏 致谢
-
-本项目采用 TDD 方法开发，确保代码质量和功能稳定性。
-
----
-
-**SD Card Image Writer v2.0**
+**USB/SD Card Image Writer v2.0**
 
 *简单、快速、可靠* 🚀
